@@ -1,15 +1,22 @@
 grammar Latex;
 
 entry: ((formula | text | '_')+ EOF | EOF);
-formula: DOLLAR ((lower | upper | iText | text)+)? DOLLAR;
-lower: LOWER (iSymbol | SYMBOL);
-upper: UPPER (iSymbol | SYMBOL);
+formula: DOLLAR ((lower | upper | iText | text)+?)? DOLLAR;
+lower: LOWER LEFT_BRACKET (iText | lower | upper | symbol)+ RIGHT_BRACKET
+     | LOWER (lower | upper | iSymbol | symbol)
+     ;
+upper: UPPER LEFT_BRACKET (iText | lower | upper | symbol)+ RIGHT_BRACKET
+     | UPPER (upper | lower | iSymbol | symbol)
+     ;
 
 iSymbol: LETTER;
+symbol: SYMBOL;
 iText: LETTER+;
 
-text: (LETTER | SYMBOL | WHITESPACE)+;
+text: (LETTER | SYMBOL | LOWER | UPPER | DOLLAR | WHITESPACE)+?;
 
+LEFT_BRACKET: '{';
+RIGHT_BRACKET: '}';
 DOLLAR: '$';
 UPPER: '^';
 LOWER: '_';
