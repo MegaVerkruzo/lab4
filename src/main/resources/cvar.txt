@@ -1,0 +1,36 @@
+imports: {{
+    import org.grunskii.Tree;
+}}
+
+tokens: {{
+    'LINK': "&";
+    'POINTER': "*";
+    'NAME': regex "[a-zA-Z_]+[a-zA-Z_0-9]";
+    'COMMA': ",";
+    'SEMICOLON': ";";
+}}
+
+rules: {{
+    pointer: {{ Tree }} = {{
+        <name:'NAME'> => {{ new Tree(type) }};
+        'POINTER' <var:pointer> => {{ new Tree("T", var) }};
+    }}
+
+    variable: {{ Tree }} = {{
+        'LINK' <name:'NAME'> => {{ new Tree("N", new Tree("&"), new Tree(name)) }};
+        <var:pointer> => {{ new Tree("N", var) }};
+    }}
+
+    elem_cont: {{ Tree }} = {{
+        => {{ new Tree("Epsilon") }};
+        'COMMA' <elems: elements> => {{ new Tree("nextElements", new Tree(","), elems) }};
+    }}
+
+    elements: {{ Tree }} = {{
+        <var:variable> <others:elem_cont> => {{ new Tree("Elements", var, others) }};
+    }}
+
+    start: {{ Tree }} = {{
+        <type:'NAME'> <vars:elements> => {{ new Tree("Start", new Tree(type), vars) }};
+    }}
+}}
