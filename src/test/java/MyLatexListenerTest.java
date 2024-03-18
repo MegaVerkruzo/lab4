@@ -1,25 +1,27 @@
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.grunskii.LatexLexer;
-import org.grunskii.LatexParser;
-import org.grunskii.MyLatexListener;
+import org.grunskii.ImportListener;
+import org.grunskii.ParserBaseListener;
+import org.grunskii.ParserLexer;
+import org.grunskii.ParserParser;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class MyLatexListenerTest {
     private static String transformLatex(String latex) {
-        LatexLexer lexer = new LatexLexer(CharStreams.fromString(latex));
+        ParserLexer lexer = new ParserLexer(CharStreams.fromString(latex));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        LatexParser logParser = new LatexParser(tokens);
+        ParserParser logParser = new ParserParser(tokens);
 
         ParseTree tree = logParser.entry();
         ParseTreeWalker walker = new ParseTreeWalker();
-        MyLatexListener latexListener = new MyLatexListener();
+        ParserBaseListener latexListener = new ImportListener();
         walker.walk(latexListener, tree);
 
-        return latexListener.getResult();
+        return null;
     }
 
     @Test

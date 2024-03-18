@@ -1,0 +1,31 @@
+imports: {{
+    import java.lang.Math;
+}}
+
+tokens: {{
+    'LP': "(";
+    'RP': ")";
+    'POW': "**";
+    'MULTIPLY': "*";
+    'DIVISION': "/";
+    'PLUS': "+";
+    'MINUS': "-";
+    'VAR': regex "[0-9]+";
+}}
+
+rules: {{
+    atom: {{ Long }} = {{
+        'LP' <value:expr> 'RP' => {{ value }};
+        <n:'VAR'> => {{ Long.parseLong(n) }};
+    }}
+
+    prod: {{ Long }} = {{
+        <expr:prod> 'MULTIPLY' <expr:atom> => {{ cont }};
+        <prod:atom> => {{ prod }};
+    }}
+
+    expr: {{ Long }} = {{
+        <expr1:expr> 'PLUS' <expr2:prod> => {{ cont }};
+        <prod:prod> => {{ prod }};
+    }}
+}}

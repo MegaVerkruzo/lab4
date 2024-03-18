@@ -35,7 +35,7 @@ rules: {{
         'DIVISION' <expr:pow> <cont:prod_cont{{ {{ acc / expr }}; }}> => {{ cont }};
     }}
 
-    multiply: {{ Long }} = {{
+    prod: {{ Long }} = {{
         <expr:pow> <cont:prod_cont{{ {{ expr }}; }}> => {{ cont }};
     }}
 
