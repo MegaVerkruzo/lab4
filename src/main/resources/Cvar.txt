@@ -12,7 +12,7 @@ tokens: {{
 
 rules: {{
     pointer: {{ Tree }} = {{
-        <name:'NAME'> => {{ new Tree(type) }};
+        <name:'NAME'> => {{ new Tree(name) }};
         'POINTER' <var:pointer> => {{ new Tree("T", var) }};
     }}
 

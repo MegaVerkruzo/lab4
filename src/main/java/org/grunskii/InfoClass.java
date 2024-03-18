@@ -11,15 +11,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InfoClass {
-    private static final String PACKAGE_IMPORT = "import org.grunskii";
-    private static final List<String> imports = new ArrayList<>();
-    private static final Map<String, String> map = new HashMap<>();
+    public static final String PACKAGE = "org.grunskii";
+    public static final List<String> imports = new ArrayList<>();
+    public static final Map<String, String> tokens = new HashMap<>();
     private static final List<String> regexes = new ArrayList<>();
     public static final LinkedHashMap<String, NonTerminal> nonTerminals = new LinkedHashMap<>();
     public static final List<String> orderNonTerminals = new ArrayList<>();
 
     static {
-        addImport(PACKAGE_IMPORT + ".model.*;");
+        addImport("import " + PACKAGE + ".model.*;");
+        addImport("import java.io.InputStream;");
+        addImport("import java.text.ParseException;");
+        addImport("import java.io.IOException;");
+        addToken(FirstFollow.EPSILON, "", false);
     }
 
     public static void addImport(String str) {
@@ -28,9 +32,9 @@ public class InfoClass {
 
     public static void addToken(String key, String value, boolean isRegex) {
         if (!isRegex) {
-            map.put(value, key);
+            tokens.put(value, key);
         } else {
-            map.put(value, key);
+            tokens.put(value, key);
             regexes.add(value);
         }
     }
@@ -48,12 +52,12 @@ public class InfoClass {
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(value);
             if (matcher.find()) {
-                return map.get(regex);
+                return tokens.get(regex);
             }
         }
 
-        if (map.containsKey(value)) {
-            return map.get(value);
+        if (tokens.containsKey(value)) {
+            return tokens.get(value);
         }
 
         throw new IllegalArgumentException("Can't find token");

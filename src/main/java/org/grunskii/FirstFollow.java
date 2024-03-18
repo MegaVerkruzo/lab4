@@ -2,6 +2,7 @@ package org.grunskii;
 
 import org.grunskii.model.*;
 
+import java.util.Optional;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 public class FirstFollow {
     public static Map<String, Set<String>> first = new HashMap<>();
     public static Map<String, Set<String>> follow = new HashMap<>();
-    private static final String EPSILON = "$$$$$EPSILON";
+    public static final String EPSILON = "EPSILON_Bf11o3bo1V";
 
     public static void makeFirstFollow() {
         makeFirst();
@@ -37,7 +38,7 @@ public class FirstFollow {
                         }
 
                         if (follow.get(nonTerminal.name()).stream().anyMatch(second::contains)) {
-                           return false;
+                            return false;
                         }
                     }
                 }

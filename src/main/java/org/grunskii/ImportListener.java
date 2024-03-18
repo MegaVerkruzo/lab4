@@ -98,11 +98,11 @@ public class ImportListener extends ParserBaseListener {
     }
 
     private RuleArgument getRuleArgumentWithAttributes(ParserParser.SubRuleArgumentListContext ctx) {
-        String nameRule = Util.getStrFromContext(ctx.string());
+        String nameRule = Util.getStrFromContext(ctx.string()).trim();
 
         if (ctx.type().tokenName() != null) {
             return new RuleArgument(true, nameRule,
-                    Util.getStrFromContext(ctx.type().tokenName().string()), List.of()
+                    Util.getStrFromContext(ctx.type().tokenName().string()).trim(), List.of("type")
             );
         } else if (ctx.type().string() != null && ctx.type().functionArguments() == null) {
             return new RuleArgument(false, nameRule,
