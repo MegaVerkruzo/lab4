@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Main {
-    private static final String fileName = "Cvar.txt";
+    private static final String fileName = "Calculator.txt";
 
     public static void main(String[] args) throws IOException {
         Path path = Paths.get(fileName);
@@ -25,7 +25,10 @@ public class Main {
         walker.walk(latexListener, tree);
         FirstFollow.makeFirstFollow();
 
-        if (FirstFollow.checkLL1());
-        CodeGenerator.generateClass(fileName.replace(".txt", ""));
+        if (FirstFollow.checkLL1()) {
+            CodeGenerator.generateClass(fileName.replace(".txt", ""));
+        } else {
+            throw new IllegalArgumentException("Can't generate class because it's not LL1");
+        }
     }
 }

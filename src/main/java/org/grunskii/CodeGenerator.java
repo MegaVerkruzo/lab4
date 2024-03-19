@@ -57,19 +57,75 @@ public class CodeGenerator {
             writer.write(String.format("""
                                                 
                             public class LexicalAnalyzer%s {
-                                private final InputStream is;
+                                private final String is;
                                 private int curChar;
                                 private int curPos;
                                 private Token%s curToken;
-                                private String buffer;
+                                private String buffer = "";
+                                private static final List<String> regexes = List.of(%s);
+                                private static final Map<String, String> tokens = new LinkedHashMap<>();
                                                 
-                                public LexicalAnalyzer%s(InputStream is) throws ParseException {
+                                static {
+                                    %s
+                                }
+                                                
+                                public LexicalAnalyzer%s(String is) throws ParseException {
                                     this.is = is;
                                     this.curPos = 0;
-                                    nextChar();
+                                    this.curChar = is.charAt(curPos);
                                 }
                                 
                                 public void nextToken() throws ParseException {
+                                    while (curChar != -1 && isBlank(curChar)) {
+                                        nextChar();
+                                    }
+                                    
+                                    if (curChar == -1) {
+                                        curToken = Token%s.%s;
+                                        return;
+                                    };
+                                    
+                                    String chStr = Character.toString(curChar);
+                                    String regex = InfoClass.isRegex(regexes, chStr);
+                                    if (regex != null) {
+                                        curToken = Token%s.valueOf(tokens.get(regex));
+                                        skipWord();
+                                        return;
+                                    } else {
+                                        buffer = "" + chStr;
+                                    }
+                                    
+                                    boolean find = false;
+                                    while (!buffer.isBlank() && !find) {
+                                        for (Map.Entry<String, String> entry : tokens.entrySet()) {
+                                            while (entry.getKey().startsWith(buffer) && !entry.getKey().equals(buffer)) {
+                                                curPos++;
+                                                curChar = is.charAt(curPos);
+                                                buffer += curChar;
+                                            } 
+                                            
+                                            if (entry.getKey().equals(buffer)) {
+                                                curToken = Token%s.valueOf(entry.getValue());
+                                                curPos++;
+                                                if (curPos < is.length()) {
+                                                    curChar = is.charAt(curPos);
+                                                } else {
+                                                    curChar = -1;
+                                                }
+                                                find = true;
+                                                break;
+                                            } else {
+                                                if (buffer.length() > 1) {
+                                                    curPos -= buffer.length() - 1;
+                                                    buffer.substring(0, 1);
+                                                    curChar = is.charAt(curPos);
+                                                }
+                                            }
+                                        }
+                                        if (!find) {
+                                            throw new ParseException("Illegal character " + (char) curChar, curPos);
+                                        }
+                                    }
                                 } 
                                 
                                 public Token%s getToken() {
@@ -86,7 +142,7 @@ public class CodeGenerator {
                                 
                                 private void skipWord() throws ParseException {
                                     buffer = "";
-                                    while (Character.isAlphabetic(curChar)) {
+                                    while (curChar != -1 && InfoClass.isRegex(regexes, Character.toString(curChar)) != null) {
                                         buffer += Character.toString(curChar);
                                         nextChar();
                                     }
@@ -94,15 +150,20 @@ public class CodeGenerator {
                                 
                                 private void nextChar() throws ParseException {
                                     curPos++;
-                                    try {
-                                        curChar = is.read();
-                                    } catch (IOException e) {
-                                        throw new ParseException(e.getMessage(), curPos);
-                                    }
+                                    curChar = curPos == is.length() ? -1 : is.charAt(curPos);
+                                }
+                                
+                                private boolean isBlank(int c) {
+                                    return Character.isWhitespace(c);
                                 }
                             }
                             """,
-                    fileName, fileName, fileName, fileName));
+                    fileName, fileName,
+                    InfoClass.regexes.stream().map(str -> "\"" + str + "\"").collect(Collectors.joining(", ")),
+                    InfoClass.tokens.entrySet().stream().map(entry -> "tokens.put(\"" + entry.getKey() + "\", \"" + entry.getValue() + "\")").collect(Collectors.joining(";\n")) + ";",
+                    fileName,
+                    fileName, FirstFollow.EPSILON,
+                    fileName, fileName, fileName));
 //            writer.write(String.join(", ", InfoClass.tokens.values()));
 //            writer.newLine();
 //            writer.write("}");
@@ -123,7 +184,7 @@ public class CodeGenerator {
                         public class Parser%s {
                             private LexicalAnalyzer%s lex;
                             
-                            public %s parse(InputStream is) throws ParseException {
+                            public %s parse(String is) throws ParseException {
                                 lex = new LexicalAnalyzer%s(is);
                                 lex.nextToken();
                                 return %s();
@@ -144,8 +205,19 @@ public class CodeGenerator {
                         switch (lex.getToken()) {
                 """, nonTerminal.resultType(), nonTerminal.name(), getStringArgumentsForRead(nonTerminal)));
 
+        boolean hasEpsilon = false;
         for (String token : FirstFollow.first.get(nonTerminal.name())) {
-            writeSwitchCaseToken(writer, nonTerminal, token, fileName);
+            if (token.equals(FirstFollow.EPSILON)) {
+                hasEpsilon = true;
+            } else {
+                writeSwitchCaseToken(writer, nonTerminal, token, fileName, false);
+            }
+        }
+
+        if (hasEpsilon) {
+            for (String token : FirstFollow.follow.get(nonTerminal.name())) {
+                writeSwitchCaseToken(writer, nonTerminal, token, fileName, true);
+            }
         }
 
         writer.write(String.format("""
@@ -156,8 +228,8 @@ public class CodeGenerator {
                 """, nonTerminal.name()));
     }
 
-    private static void writeSwitchCaseToken(BufferedWriter writer, NonTerminal nonTerminal, String token, String fileName) throws IOException {
-        Rule rule = (
+    private static void writeSwitchCaseToken(BufferedWriter writer, NonTerminal nonTerminal, String token, String fileName, boolean isEpsilon) throws IOException {
+        Rule rule = (isEpsilon ? Util.findEmpty(nonTerminal) :
                 token.equals(FirstFollow.EPSILON)
                         ? Util.findEmpty(nonTerminal)
                         : Util.findRule(nonTerminal, token)
