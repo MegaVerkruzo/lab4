@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.lang.Long;
 import java.lang.Math;
-public class LexicalAnalyzerCalculator {
+public class LexicalAnalyzerModification {
     private final String is;
     private int curChar;
     private int curPos;
-    private TokenCalculator curToken;
+    private TokenModification curToken;
     private String buffer = "";
     private static final List<String> regexes = List.of("[0-9]+");
     private static final Map<String, String> tokens = new LinkedHashMap<>();
@@ -23,6 +23,8 @@ public class LexicalAnalyzerCalculator {
 tokens.put("(", "LP");
 tokens.put(")", "RP");
 tokens.put("**", "POW");
+tokens.put("??", "TWO_FACTORIAL");
+tokens.put("?", "FACTORIAL");
 tokens.put("*", "MULTIPLY");
 tokens.put("/", "DIVISION");
 tokens.put("+", "PLUS");
@@ -30,7 +32,7 @@ tokens.put("-", "MINUS");
 tokens.put("[0-9]+", "VAR");
     }
 
-    public LexicalAnalyzerCalculator(String is) throws ParseException {
+    public LexicalAnalyzerModification(String is) throws ParseException {
         this.is = is;
         this.curPos = 0;
         this.curChar = is.charAt(curPos);
@@ -42,14 +44,14 @@ tokens.put("[0-9]+", "VAR");
         }
 
         if (curChar == -1) {
-            curToken = TokenCalculator.EPSILON_Bf11o3bo1V;
+            curToken = TokenModification.EPSILON_Bf11o3bo1V;
             return;
         };
 
         String chStr = Character.toString(curChar);
         String regex = InfoClass.isRegex(regexes, chStr);
         if (regex != null) {
-            curToken = TokenCalculator.valueOf(tokens.get(regex));
+            curToken = TokenModification.valueOf(tokens.get(regex));
             skipWord();
             return;
         } else {
@@ -61,12 +63,16 @@ tokens.put("[0-9]+", "VAR");
             for (Map.Entry<String, String> entry : tokens.entrySet()) {
                 while (entry.getKey().startsWith(buffer) && !entry.getKey().equals(buffer)) {
                     curPos++;
+                    if (curPos == is.length()) {
+                        curPos--;
+                        break;
+                    }
                     curChar = is.charAt(curPos);
-                    buffer += curChar;
+                    buffer += Character.toString(curChar);
                 }
 
                 if (entry.getKey().equals(buffer)) {
-                    curToken = TokenCalculator.valueOf(entry.getValue());
+                    curToken = TokenModification.valueOf(entry.getValue());
                     curPos++;
                     if (curPos < is.length()) {
                         curChar = is.charAt(curPos);
@@ -78,7 +84,7 @@ tokens.put("[0-9]+", "VAR");
                 } else {
                     if (buffer.length() > 1) {
                         curPos -= buffer.length() - 1;
-                        buffer.substring(0, 1);
+                        buffer = buffer.substring(0, 1);
                         curChar = is.charAt(curPos);
                     }
                 }
@@ -89,7 +95,7 @@ tokens.put("[0-9]+", "VAR");
         }
     }
 
-    public TokenCalculator getToken() {
+    public TokenModification getToken() {
         return curToken;
     }
 

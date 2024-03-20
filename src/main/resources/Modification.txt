@@ -1,0 +1,78 @@
+imports: {{
+    import java.lang.Long;
+    import java.lang.Math;
+
+    static long factorial(long n) {
+        if (n <= 0) {
+            return 1L;
+        }
+        return n * factorial(n - 1);
+    }
+
+    static long two_factorial(long n) {
+        if (n <= 0) {
+            return 1L;
+        }
+        return n * two_factorial(n - 2);
+    }
+}}
+
+tokens: {{
+    'LP': "(";
+    'RP': ")";
+    'POW': "**";
+    'TWO_FACTORIAL': "??";
+    'FACTORIAL': "?";
+    'MULTIPLY': "*";
+    'DIVISION': "/";
+    'PLUS': "+";
+    'MINUS': "-";
+    'VAR': regex "[0-9]+";
+}}
+
+rules: {{
+    atom: {{ Long }} = {{
+        'LP' <value:expr> 'RP' => {{ value }};
+        <nVar:'VAR'> => {{ Long.parseLong(nVar) }};
+    }}
+
+    unary_cont: {{ acc: Long }} -> {{ Long }} = {{
+        => {{ acc }};
+        'TWO_FACTORIAL' <cont:unary_cont{{ {{ two_factorial(acc) }}; }}> => {{ cont }};
+        'FACTORIAL' <cont:unary_cont{{ {{ factorial(acc) }}; }}> => {{ cont }};
+    }}
+
+    unary: {{ Long }} = {{
+        'MINUS' <unary:unary> => {{ - unary }};
+        <atom:atom> <cont:unary_cont{{ {{ atom }}; }}> => {{ cont }};
+    }}
+
+    pow_cont: {{ Long }} = {{
+        => {{ 1L }};
+        'POW' <expr:unary> <cont:pow_cont> => {{ Math.round(Math.pow(expr, cont)) }};
+    }}
+
+    pow: {{ Long }} = {{
+        <expr:unary> <cont:pow_cont> => {{ Math.round(Math.pow(expr, cont)) }};
+    }}
+
+    prod_cont: {{ acc:Long }} -> {{ Long }} = {{
+        => {{ acc }};
+        'MULTIPLY' <expr:pow> <cont:prod_cont{{ {{ acc * expr }}; }}> => {{ cont }};
+        'DIVISION' <expr:pow> <cont:prod_cont{{ {{ acc / expr }}; }}> => {{ cont }};
+    }}
+
+    prod: {{ Long }} = {{
+        <expr:pow> <cont:prod_cont{{ {{ expr }}; }}> => {{ cont }};
+    }}
+
+    expr_cont: {{ acc: Long }} -> {{ Long }} = {{
+        => {{ acc }};
+        'PLUS' <expr:prod> <cont:expr_cont{{ {{ acc + expr }}; }}> => {{ cont }};
+        'MINUS' <expr:prod> <cont:expr_cont{{ {{ acc - expr }}; }}> => {{ cont }};
+    }}
+
+    expr: {{ Long }} = {{
+        <expr:prod> <cont:expr_cont{{ {{ expr }}; }}> => {{ cont }};
+    }}
+}}

@@ -18,6 +18,11 @@ public class ImportListener extends ParserBaseListener {
     }
 
     @Override
+    public void enterStart(ParserParser.StartContext ctx) {
+        InfoClass.inClass = Util.getStrFromContext(ctx.symbols());
+    }
+
+    @Override
     public void enterTokenList(ParserParser.TokenListContext ctx) {
         String tokenKey = Util.getStrFromContext(ctx.tokenName().string());
         String value;

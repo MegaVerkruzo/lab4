@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class InfoClass {
     public static final String PACKAGE = "org.grunskii";
     public static final List<String> imports = new ArrayList<>();
+    public static String inClass = "";
     public static final Map<String, String> tokens = new LinkedHashMap<>();
     public static final List<String> regexes = new ArrayList<>();
     public static final LinkedHashMap<String, NonTerminal> nonTerminals = new LinkedHashMap<>();

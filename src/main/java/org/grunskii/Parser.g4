@@ -3,7 +3,7 @@ grammar Parser;
 entry: start WS* map WS* rules WS* ;
 
 // start
-start: IMPORTS_WORD WS* COLON WS* LP WS* importList WS* RP WS* ;
+start: IMPORTS_WORD WS* COLON WS* LP WS* importList WS* symbols RP WS* ;
 importList: IMPORT_WORD WS* string SEMICOLON WS* importList? WS* ;
 
 // tokens
@@ -23,7 +23,7 @@ subRuleArgumentList: (tokenName | LANGLE WS* string WS* COLON WS* type WS* RANGL
 type: (tokenName | string WS* (LP WS* functionArguments WS* RP WS* )?) WS* ;
 functionArguments: LP symbols RP WS* SEMICOLON WS* functionArguments? WS*;
 
-symbols: (SYMBOL | LETTER | '.' | '_' | '"' | SEMICOLON | WS)+;
+symbols: (SYMBOL | LETTER | EQUAL | LANGLE | '.' | '_' | '"' | SEMICOLON | WS)+;
 string: (LETTER | '.' | '_')+;
 
 WS: [ \t\r\n];
@@ -31,8 +31,8 @@ WS: [ \t\r\n];
 IMPORTS_WORD: 'imports';
 RULES_WORD: 'rules';
 TOKENS_WORD: 'tokens';
-IMPORT_WORD: 'import';
 REGEX_WORD: 'regex';
+IMPORT_WORD: 'import';
 SEMICOLON: ';';
 DOUBLE_QUOTE: '"';
 SINGLE_QUOTE: '\'';

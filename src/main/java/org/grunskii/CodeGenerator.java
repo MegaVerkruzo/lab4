@@ -100,8 +100,12 @@ public class CodeGenerator {
                                         for (Map.Entry<String, String> entry : tokens.entrySet()) {
                                             while (entry.getKey().startsWith(buffer) && !entry.getKey().equals(buffer)) {
                                                 curPos++;
+                                                if (curPos == is.length()) {
+                                                    curPos--;
+                                                    break;
+                                                }
                                                 curChar = is.charAt(curPos);
-                                                buffer += curChar;
+                                                buffer += Character.toString(curChar);
                                             } 
                                             
                                             if (entry.getKey().equals(buffer)) {
@@ -117,7 +121,7 @@ public class CodeGenerator {
                                             } else {
                                                 if (buffer.length() > 1) {
                                                     curPos -= buffer.length() - 1;
-                                                    buffer.substring(0, 1);
+                                                    buffer = buffer.substring(0, 1);
                                                     curChar = is.charAt(curPos);
                                                 }
                                             }
@@ -190,13 +194,18 @@ public class CodeGenerator {
                                 return %s();
                             }
                             
+                            %s
+                            
+                            
                         """,
                 fileName,
                 fileName,
                 startNode.resultType(),
                 fileName,
-                startNode.name()
+                startNode.name(),
+                InfoClass.inClass
         ));
+
     }
 
     private static void writeFunction(BufferedWriter writer, NonTerminal nonTerminal, String fileName) throws IOException {
